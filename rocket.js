@@ -1,8 +1,13 @@
 var poplu;
-var lifespan=200;
+var lifespan=600;
 var count=0;
 var lifeP;
 var target;
+
+var rx = 150;
+var ry = 200;
+var rw = 300;
+var rh = 10;
 function setup(){
     createCanvas(600,400);
     rocket=new Rocket();
@@ -25,6 +30,7 @@ function draw(){
         poplu.selection();
     }
 
+    rect(rx,ry,rw,rh);
     ellipse(target.x,target.y,20,20);
 
 
@@ -55,11 +61,20 @@ function DNA(genes){
         }
         return new DNA(newgens);
     }
+
+    this.mutation = function(){
+        for(var i=0; i < this.genes.length; i++){
+            if(random(1)<0.01){
+                this.genes[i] = p5.Vector.random2D();
+                this.genes[i].setMag(0.1);
+            }
+        }
+    }
 }
 
 function population(){
     this.rocket=[];
-    this.popsize=25;
+    this.popsize=40;
     this.matingpool = [];
 
     for(var i=0;i<this.popsize;i++){
@@ -95,6 +110,7 @@ function population(){
             var parentB = random(this.matingpool).dna;
 
             var child = parentA.crossOver(parentB);
+            child.mutation();
             newRockets[i] = new Rocket(child);
         }
 
@@ -114,6 +130,9 @@ function Rocket(dna){
     this.vel = createVector();
     this.acc = createVector();
 
+    this.completed = false;
+    this.crashed = false;
+
     if(dna){
         this.dna = dna;
     }else{
@@ -129,6 +148,13 @@ function Rocket(dna){
         var d = dist(this.pos.x,this.pos.y,target.x,target.y);
 
         this.fitness= map(d,0,width,width,0);
+
+        if(this.completed){
+            this.fitness *= 10;
+        }
+        if(this.crashed){
+            this.fitness /=10;
+        }
         //console.log(this.fitness);
     }
 
@@ -136,12 +162,29 @@ function Rocket(dna){
 
     this.update = function(){
         //console.log(this.dns.genes[count]);
+        if(dist(this.pos.x,this.pos.y,target.x,target.y)<10){
+            this.completed = true;
+            this.pos = target.copy();
+        }
+
+        if(this.pos.x > rx && this.pos.x < rx+rw && this.pos.y > ry && this.pos.y < ry+rh){
+            this.crashed = true;
+
+        }
+
+        if(this.pos.x > width || this.pos.x < 0 ){
+            this.crashed =true;
+        }
+
+
+
         this.applyForce(this.dna.genes[count]);
         //count=(++count%lifespan);
-
-        this.vel.add(this.acc);
-        this.pos.add(this.vel);
-        this.acc.mult(0);
+        if(!this.completed && !this.crashed){
+            this.vel.add(this.acc);
+            this.pos.add(this.vel);
+            this.acc.mult(0);
+        }
         //console.log(this.fitness);
     }
 
