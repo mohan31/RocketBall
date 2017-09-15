@@ -1,5 +1,5 @@
 var poplu;
-var lifespan=600;
+var lifespan=150;
 var count=0;
 var lifeP;
 var target;
@@ -33,6 +33,15 @@ function draw(){
     rect(rx,ry,rw,rh);
     ellipse(target.x,target.y,20,20);
 
+    if(mouseIsPressed){
+        var d = dist(target.x,target.y,mouseX,mouseY);
+
+        if(d<20){
+            target.x = mouseX;
+            target.y = mouseY;
+        }
+    }
+
 
 }
 
@@ -44,7 +53,7 @@ function DNA(genes){
         this.genes = [];
         for(var i = 0; i < lifespan; i++){
             this.genes[i] = p5.Vector.random2D();
-            this.genes[i].setMag(0.1);
+            this.genes[i].setMag(0.5);
         }
     }
 
@@ -64,9 +73,9 @@ function DNA(genes){
 
     this.mutation = function(){
         for(var i=0; i < this.genes.length; i++){
-            if(random(1)<0.01){
+            if(random(1)<0.03){
                 this.genes[i] = p5.Vector.random2D();
-                this.genes[i].setMag(0.1);
+                this.genes[i].setMag(0.5);
             }
         }
     }
